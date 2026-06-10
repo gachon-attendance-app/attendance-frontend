@@ -753,45 +753,170 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadProfessorPage(pageView: View) {
-        FirebaseClient.get("Subjects") { subjectsJson ->
-            val firstSubjectCode = subjectsJson?.keys()?.asSequence()?.firstOrNull() ?: DEFAULT_SUBJECT_CODE
-            currentSubjectCode = firstSubjectCode
+        findChildByIdName<View>(pageView, "layoutClassInfoContent")?.visibility = View.GONE
+        findChildByIdName<View>(pageView, "tvNoClassInfo")?.visibility = View.VISIBLE
+        setText(pageView, "tvDate", todayText())
+        setText(pageView, "tvPeriod", "-")
 
-            FirebaseClient.get("Subjects/$firstSubjectCode") { subjectJson ->
-                val subject = FirebaseParsers.subject(subjectJson, firstSubjectCode)
+        val calendar = Calendar.getInstance(Locale.KOREA)
+        val currentDayInt = when (calendar.get(Calendar.DAY_OF_WEEK)) {
+            Calendar.MONDAY -> 1
+            Calendar.TUESDAY -> 2
+            Calendar.WEDNESDAY -> 3
+            Calendar.THURSDAY -> 4
+            Calendar.FRIDAY -> 5
+            Calendar.SATURDAY -> 6
+            Calendar.SUNDAY -> 7
+            else -> 1
+        }
+        val nowMinutes = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)
+        val currentTotalMinutes = currentDayInt * 24 * 60 + nowMinutes
 
-                currentClassName = subject?.subjectName ?: "모바일 프로그래밍"
+        data class ProfessorClassInstance(
+            val subjectCode: String,
+            val subjectName: String,
+            val dayOfWeekInt: Int,
+            val startTime: String,
+            val endTime: String,
+            val location: String
+        )
 
-                val firstSchedule = subject?.schedules?.firstOrNull()
-                val firstPeriod = firstSchedule?.periods?.firstOrNull()
-                val lastPeriod = firstSchedule?.periods?.lastOrNull()
-
-                currentClassStartTime = firstPeriod?.startTime ?: "10:00"
-                currentClassTime = "${firstPeriod?.startTime ?: "10:00"} ~ ${lastPeriod?.endTime ?: "10:50"}"
-
-                runOnUiThread {
-                    setText(pageView, "tvDate", todayText())
-                    setText(pageView, "tvPeriod", "1교시")
-                    setText(pageView, "tvClassName", currentClassName)
-                    setText(pageView, "tvClassTime", subject?.schedules?.joinToString(" / ") {
-                        "${FirebaseParsers.convertDayToKorean(it.dayOfWeek)} ${it.periods.firstOrNull()?.startTime ?: ""}-${it.periods.lastOrNull()?.endTime ?: ""}"
-                    } ?: currentClassTime)
-
-                    setText(pageView, "tvAfter15ClassName", currentClassName)
+        FirebaseClient.get("Enrollment/$userId") { enrollmentJson ->
+            val subjectCodes = mutableListOf<String>()
+            val keys = enrollmentJson?.keys()
+            if (keys != null) {
+                while (keys.hasNext()) {
+                    val code = keys.next()
+                    if (enrollmentJson.optBoolean(code, false)) subjectCodes.add(code)
                 }
             }
 
-            val today = apiDateText()
-
-            FirebaseClient.get("Attendance_Session/$firstSubjectCode/$today") { sessionJson ->
+            if (subjectCodes.isEmpty()) {
                 runOnUiThread {
-                    updateProfessorSessionUi(pageView, sessionJson)
+                    setText(pageView, "tvNoClassInfo", "담당 등록 과목이 없습니다.")
+                    updateProfessorSessionUi(pageView, null)
+                    loadProfessorRows(pageView, null)
                 }
+                return@get
             }
 
-            FirebaseClient.get("Attendance_Records/$firstSubjectCode") { recordsJson ->
-                runOnUiThread {
-                    loadProfessorRows(pageView, recordsJson)
+            val allClasses = mutableListOf<ProfessorClassInstance>()
+            var fetchCount = 0
+            val lock = Any()
+
+            subjectCodes.forEach { subjectCode ->
+                FirebaseClient.get("Subjects/$subjectCode") { subjectJson ->
+                    synchronized(lock) {
+                        fetchCount++
+                        if (subjectJson != null) {
+                            val subCode = subjectJson.optString("subjectCode", subjectCode)
+                            val subName = subjectJson.optString("subjectName", "알 수 없는 과목")
+                            val scheduleObj = subjectJson.optJSONObject("schedule")
+                            val dayKeys = scheduleObj?.keys()
+
+                            if (dayKeys != null) {
+                                while (dayKeys.hasNext()) {
+                                    val dayObj = scheduleObj.optJSONObject(dayKeys.next()) ?: continue
+                                    val dayInt = scheduleDayToInt(dayObj.optString("dayOfWeek", ""))
+                                    if (dayInt <= 0) continue
+
+                                    val periods = dayObj.optJSONArray("periods") ?: continue
+                                    var firstStart: String? = null
+                                    var lastEnd: String? = null
+                                    for (i in 0 until periods.length()) {
+                                        val period = periods.optJSONObject(i) ?: continue
+                                        val start = period.optString("startTime", "")
+                                        val end = period.optString("endTime", "")
+                                        if (start.isNotBlank() && end.isNotBlank()) {
+                                            if (firstStart == null) firstStart = start
+                                            lastEnd = end
+                                        }
+                                    }
+
+                                    if (firstStart != null && lastEnd != null) {
+                                        allClasses.add(
+                                            ProfessorClassInstance(
+                                                subjectCode = subCode,
+                                                subjectName = subName,
+                                                dayOfWeekInt = dayInt,
+                                                startTime = firstStart,
+                                                endTime = lastEnd,
+                                                location = dayObj.optString("location", "미정")
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        if (fetchCount == subjectCodes.size) {
+                            if (allClasses.isEmpty()) {
+                                runOnUiThread {
+                                    setText(pageView, "tvNoClassInfo", "등록된 수업 시간이 없습니다.")
+                                    updateProfessorSessionUi(pageView, null)
+                                    loadProfessorRows(pageView, null)
+                                }
+                                return@get
+                            }
+
+                            val ongoingClass = allClasses.firstOrNull {
+                                it.dayOfWeekInt == currentDayInt &&
+                                    nowMinutes in scheduleTimeToMinutes(it.startTime)..scheduleTimeToMinutes(it.endTime)
+                            }
+                            val upcomingClass = allClasses.minByOrNull {
+                                var classMinutes = it.dayOfWeekInt * 24 * 60 + scheduleTimeToMinutes(it.startTime)
+                                if (classMinutes < currentTotalMinutes) classMinutes += 7 * 24 * 60
+                                classMinutes
+                            }
+                            val targetClass = ongoingClass ?: upcomingClass ?: return@get
+
+                            currentSubjectCode = targetClass.subjectCode
+                            currentClassName = cleanSubjectNameForDisplay(targetClass.subjectName)
+                            currentClassStartTime = targetClass.startTime
+                            currentClassTime = "${targetClass.startTime} ~ ${targetClass.endTime}"
+
+                            val startHour = currentClassStartTime.substringBefore(":").toIntOrNull() ?: 10
+                            val periodNumber = when (startHour) {
+                                9 -> "1교시"
+                                10 -> "2교시"
+                                11 -> "3교시"
+                                12 -> "4교시"
+                                13 -> "5교시"
+                                14 -> "6교시"
+                                15 -> "7교시"
+                                16 -> "8교시"
+                                else -> "1교시"
+                            }
+                            val periodText = if (ongoingClass != null) {
+                                "수업 중"
+                            } else {
+                                "(${scheduleDayText(targetClass.dayOfWeekInt)}) $periodNumber 예정"
+                            }
+
+                            runOnUiThread {
+                                findChildByIdName<View>(pageView, "layoutClassInfoContent")?.visibility = View.VISIBLE
+                                findChildByIdName<View>(pageView, "tvNoClassInfo")?.visibility = View.GONE
+                                setText(pageView, "tvDate", dateTextForScheduleDay(targetClass.dayOfWeekInt))
+                                setText(pageView, "tvPeriod", periodText)
+                                setText(pageView, "tvClassName", currentClassName)
+                                setText(pageView, "tvClassTime", "${scheduleDayText(targetClass.dayOfWeekInt)} $currentClassTime")
+                                setText(pageView, "tvAfter15ClassName", currentClassName)
+                            }
+
+                            val today = apiDateText()
+                            FirebaseClient.get("Attendance_Session/$currentSubjectCode/$today") { sessionJson ->
+                                runOnUiThread {
+                                    updateProfessorSessionUi(pageView, sessionJson)
+                                }
+                            }
+
+                            FirebaseClient.get("Attendance_Records/$currentSubjectCode") { recordsJson ->
+                                runOnUiThread {
+                                    loadProfessorRows(pageView, recordsJson)
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
