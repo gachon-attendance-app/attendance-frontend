@@ -34,7 +34,7 @@
             android:layout_height="38dp"
             android:background="@android:color/transparent"
             android:src="@drawable/menu"
-            app:tint="#707070" />
+            android:tint="#707070" />
     </LinearLayout>
 
     <!-- 제목 카드 -->
@@ -54,7 +54,7 @@
             android:layout_height="match_parent"
             android:gravity="center_vertical"
             android:paddingStart="14dp"
-            android:text="주간 출결 현황"
+            android:text="전체 출결 현황"
             android:textColor="#111111"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -82,7 +82,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text=""
+                android:text="2026 5월"
                 android:textColor="#111111"
                 android:textSize="20sp"
                 android:textStyle="bold" />
@@ -96,15 +96,14 @@
                 android:paddingStart="4dp"
                 android:paddingEnd="4dp">
 
-                <ImageButton
+                <TextView
                     android:id="@+id/btnPrevWeek"
-                    android:layout_width="32dp"
+                    android:layout_width="26dp"
                     android:layout_height="match_parent"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="지난주"
-                    android:padding="7dp"
-                    android:scaleType="centerInside"
-                    app:srcCompat="@drawable/arrow_black" />
+                    android:gravity="center"
+                    android:text="◀"
+                    android:textColor="#999999"
+                    android:textSize="18sp" />
 
                 <LinearLayout
                     android:id="@+id/dateSun"
@@ -126,8 +125,8 @@
                         android:layout_width="44dp"
                         android:layout_height="44dp"
                         android:gravity="center"
-                        android:text=""
-                        android:textColor="#111111"
+                        android:text="24"
+                        android:textColor="#B0B0B0"
                         android:textSize="18sp" />
                 </LinearLayout>
 
@@ -151,7 +150,7 @@
                         android:layout_width="44dp"
                         android:layout_height="44dp"
                         android:gravity="center"
-                        android:text=""
+                        android:text="25"
                         android:textColor="#111111"
                         android:textSize="18sp" />
                 </LinearLayout>
@@ -176,7 +175,7 @@
                         android:layout_width="44dp"
                         android:layout_height="44dp"
                         android:gravity="center"
-                        android:text=""
+                        android:text="26"
                         android:textColor="#111111"
                         android:textSize="18sp" />
                 </LinearLayout>
@@ -201,7 +200,8 @@
                         android:layout_width="44dp"
                         android:layout_height="44dp"
                         android:gravity="center"
-                        android:text=""
+                        android:background="@drawable/bg_date_selected_blue"
+                        android:text="27"
                         android:textColor="#111111"
                         android:textSize="18sp" />
                 </LinearLayout>
@@ -226,7 +226,7 @@
                         android:layout_width="44dp"
                         android:layout_height="44dp"
                         android:gravity="center"
-                        android:text=""
+                        android:text="28"
                         android:textColor="#111111"
                         android:textSize="18sp" />
                 </LinearLayout>
@@ -250,8 +250,9 @@
                         android:id="@+id/tvFriDate"
                         android:layout_width="44dp"
                         android:layout_height="44dp"
+                        android:background="@drawable/bg_date_warning_red"
                         android:gravity="center"
-                        android:text=""
+                        android:text="29"
                         android:textColor="#111111"
                         android:textSize="18sp" />
                 </LinearLayout>
@@ -276,22 +277,19 @@
                         android:layout_width="44dp"
                         android:layout_height="44dp"
                         android:gravity="center"
-                        android:text=""
+                        android:text="30"
                         android:textColor="#111111"
                         android:textSize="18sp" />
                 </LinearLayout>
 
-                <ImageButton
+                <TextView
                     android:id="@+id/btnNextWeek"
-                    android:layout_width="32dp"
+                    android:layout_width="26dp"
                     android:layout_height="match_parent"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="다음주"
-                    android:padding="7dp"
-                    android:rotation="180"
-                    android:scaleType="centerInside"
-                    app:srcCompat="@drawable/arrow_black" />
-
+                    android:gravity="center"
+                    android:text="▶"
+                    android:textColor="#999999"
+                    android:textSize="18sp" />
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -327,12 +325,560 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
-                    android:text=""
+                    android:text="2026.05.27"
                     android:textColor="#004B83"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
-                <!-- 동적으로 아이템이 여기에 추가됩니다 -->
+                <!-- 아이템 1 -->
+                <LinearLayout
+                    android:id="@+id/itemAttendance1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/bg_attendance_item"
+                    android:clickable="true"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="8dp"
+                        android:layout_height="match_parent"
+                        android:background="#008AE8" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="12dp">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:gravity="center_vertical"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="모바일 프로그래밍"
+                                    android:textColor="#004B83"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="◷ 11:00 ~ 11:50"
+                                    android:textColor="#666666"
+                                    android:textSize="11sp" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="결석"
+                                android:textColor="#D60000"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <ImageView
+                                android:layout_width="38dp"
+                                android:layout_height="match_parent"
+                                android:contentDescription="결석 아이콘"
+                                android:scaleType="centerInside"
+                                android:src="@drawable/absentweek" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/detailArea1"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="12dp"
+                            android:paddingBottom="8dp"
+                            android:visibility="gone">
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_marginBottom="7dp"
+                                android:background="#D3D3D3" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="8dp"
+                                android:text="중간 퇴장 방지 시스템"
+                                android:textColor="#444444"
+                                android:textSize="12sp" />
+
+                            <LinearLayout
+                                android:id="@+id/detailRowsContainer1"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical" />
+
+                            <TextView
+                                android:id="@+id/btnCollapse1"
+                                android:layout_width="match_parent"
+                                android:layout_height="18dp"
+                                android:gravity="center"
+                                android:text="▲"
+                                android:textColor="#777777"
+                                android:textSize="14sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- 아이템 2 -->
+                <LinearLayout
+                    android:id="@+id/itemAttendance2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/bg_attendance_item"
+                    android:clickable="true"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="8dp"
+                        android:layout_height="match_parent"
+                        android:background="#008AE8" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="12dp">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:gravity="center_vertical"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="모바일 프로그래밍"
+                                    android:textColor="#004B83"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="◷ 10:00 ~ 10:50"
+                                    android:textColor="#666666"
+                                    android:textSize="11sp" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="출석"
+                                android:textColor="#004B83"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <ImageView
+                                android:layout_width="38dp"
+                                android:layout_height="match_parent"
+                                android:contentDescription="출석 아이콘"
+                                android:scaleType="centerInside"
+                                android:src="@drawable/attendanceweek" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/detailArea2"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="12dp"
+                            android:paddingBottom="8dp"
+                            android:visibility="gone">
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_marginBottom="7dp"
+                                android:background="#D3D3D3" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="8dp"
+                                android:text="중간 퇴장 방지 시스템"
+                                android:textColor="#444444"
+                                android:textSize="12sp" />
+
+                            <LinearLayout
+                                android:id="@+id/detailRowsContainer2"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical" />
+
+                            <TextView
+                                android:id="@+id/btnCollapse2"
+                                android:layout_width="match_parent"
+                                android:layout_height="18dp"
+                                android:gravity="center"
+                                android:text="▲"
+                                android:textColor="#777777"
+                                android:textSize="14sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- 아이템 3 -->
+                <LinearLayout
+                    android:id="@+id/itemAttendance3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/bg_attendance_item"
+                    android:clickable="true"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="8dp"
+                        android:layout_height="match_parent"
+                        android:background="#008AE8" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="12dp">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:gravity="center_vertical"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="모바일 프로그래밍"
+                                    android:textColor="#004B83"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="◷ 12:00 ~ 12:50"
+                                    android:textColor="#666666"
+                                    android:textSize="11sp" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="출석"
+                                android:textColor="#004B83"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <ImageView
+                                android:layout_width="38dp"
+                                android:layout_height="match_parent"
+                                android:contentDescription="출석 아이콘"
+                                android:scaleType="centerInside"
+                                android:src="@drawable/attendanceweek" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/detailArea3"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="12dp"
+                            android:paddingBottom="8dp"
+                            android:visibility="gone">
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_marginBottom="7dp"
+                                android:background="#D3D3D3" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="8dp"
+                                android:text="중간 퇴장 방지 시스템"
+                                android:textColor="#444444"
+                                android:textSize="12sp" />
+
+                            <LinearLayout
+                                android:id="@+id/detailRowsContainer3"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical" />
+
+                            <TextView
+                                android:id="@+id/btnCollapse3"
+                                android:layout_width="match_parent"
+                                android:layout_height="18dp"
+                                android:gravity="center"
+                                android:text="▲"
+                                android:textColor="#777777"
+                                android:textSize="14sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- 아이템 4 -->
+                <LinearLayout
+                    android:id="@+id/itemAttendance4"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/bg_attendance_item"
+                    android:clickable="true"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="8dp"
+                        android:layout_height="match_parent"
+                        android:background="#008AE8" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="12dp">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:gravity="center_vertical"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="소프트웨어공학"
+                                    android:textColor="#004B83"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="◷ 12:00 ~ 12:50"
+                                    android:textColor="#666666"
+                                    android:textSize="11sp" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="지각"
+                                android:textColor="#9C00B8"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <ImageView
+                                android:layout_width="38dp"
+                                android:layout_height="match_parent"
+                                android:contentDescription="지각 아이콘"
+                                android:scaleType="centerInside"
+                                android:src="@drawable/lateweek" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/detailArea4"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="12dp"
+                            android:paddingBottom="8dp"
+                            android:visibility="gone">
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_marginBottom="7dp"
+                                android:background="#D3D3D3" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="8dp"
+                                android:text="중간 퇴장 방지 시스템"
+                                android:textColor="#444444"
+                                android:textSize="12sp" />
+
+                            <LinearLayout
+                                android:id="@+id/detailRowsContainer4"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical" />
+
+                            <TextView
+                                android:id="@+id/btnCollapse4"
+                                android:layout_width="match_parent"
+                                android:layout_height="18dp"
+                                android:gravity="center"
+                                android:text="▲"
+                                android:textColor="#777777"
+                                android:textSize="14sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- 아이템 5 -->
+                <LinearLayout
+                    android:id="@+id/itemAttendance5"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/bg_attendance_item"
+                    android:clickable="true"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="8dp"
+                        android:layout_height="match_parent"
+                        android:background="#008AE8" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="12dp">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:gravity="center_vertical"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="소프트웨어공학"
+                                    android:textColor="#004B83"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="◷ 12:00 ~ 12:50"
+                                    android:textColor="#666666"
+                                    android:textSize="11sp" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="출석"
+                                android:textColor="#004B83"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <ImageView
+                                android:layout_width="38dp"
+                                android:layout_height="match_parent"
+                                android:contentDescription="출석 아이콘"
+                                android:scaleType="centerInside"
+                                android:src="@drawable/attendanceweek" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/detailArea5"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="12dp"
+                            android:paddingBottom="8dp"
+                            android:visibility="gone">
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_marginBottom="7dp"
+                                android:background="#D3D3D3" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="8dp"
+                                android:text="중간 퇴장 방지 시스템"
+                                android:textColor="#444444"
+                                android:textSize="12sp" />
+
+                            <LinearLayout
+                                android:id="@+id/detailRowsContainer5"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical" />
+
+                            <TextView
+                                android:id="@+id/btnCollapse5"
+                                android:layout_width="match_parent"
+                                android:layout_height="18dp"
+                                android:gravity="center"
+                                android:text="▲"
+                                android:textColor="#777777"
+                                android:textSize="14sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
 
             </LinearLayout>
         </ScrollView>
@@ -361,7 +907,7 @@
                 android:padding="14dp"
                 android:scaleType="centerInside"
                 android:src="@drawable/home"
-                app:tint="#FFFFFF" />
+                android:tint="#FFFFFF" />
 
             <ImageButton
                 android:id="@+id/btnBottomRefresh"
@@ -372,7 +918,7 @@
                 android:padding="14dp"
                 android:scaleType="centerInside"
                 android:src="@drawable/retry"
-                app:tint="#FFFFFF" />
+                android:tint="#FFFFFF" />
 
             <ImageButton
                 android:id="@+id/btnBottomNotice"
@@ -383,7 +929,7 @@
                 android:padding="14dp"
                 android:scaleType="centerInside"
                 android:src="@drawable/bell"
-                app:tint="#FFFFFF" />
+                android:tint="#FFFFFF" />
 
             <ImageButton
                 android:id="@+id/btnBottomSchedule"
@@ -394,7 +940,7 @@
                 android:padding="14dp"
                 android:scaleType="centerInside"
                 android:src="@drawable/calendar"
-                app:tint="#FFFFFF" />
+                android:tint="#FFFFFF" />
 
             <ImageButton
                 android:id="@+id/btnBottomLogout"
@@ -405,7 +951,7 @@
                 android:padding="14dp"
                 android:scaleType="centerInside"
                 android:src="@drawable/back"
-                app:tint="#FFFFFF" />
+                android:tint="#FFFFFF" />
         </LinearLayout>
 
         <View

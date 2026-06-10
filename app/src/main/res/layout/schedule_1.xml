@@ -97,7 +97,7 @@
                     <!-- Kotlin에서 JSON 기반으로 시간표 전체를 그림 -->
                     <FrameLayout
                         android:id="@+id/timeTableCanvas"
-                        android:layout_width="250dp"
+                        android:layout_width="match_parent"
                         android:layout_height="330dp"
                         android:layout_gravity="center_horizontal" />
 
