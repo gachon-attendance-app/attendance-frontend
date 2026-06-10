@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.FrameLayout
+import android.widget.GridLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -35,6 +36,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlin.math.roundToInt
 
 class MainActivity : AppCompatActivity() {
 
@@ -52,6 +54,8 @@ class MainActivity : AppCompatActivity() {
     private var currentClassName: String = "모바일 프로그래밍"
     private var currentClassTime: String = "10:00 ~ 10:50"
     private var currentClassStartTime: String = "10:00"
+    private var weekCalendar: Calendar = Calendar.getInstance(Locale.KOREA)
+    private var weekSelectedDateStr: String = ""
 
     private val defaultStudentId = "202234920"
     private val firebaseDb = FirebaseDatabase.getInstance().reference
@@ -254,7 +258,7 @@ class MainActivity : AppCompatActivity() {
                 loadMyPage(pageView)
                 loadSchedule(pageView)
             }
-            R.layout.week_1, R.layout.week_2 -> loadAttendanceCalendar(pageView)
+            R.layout.week_1, R.layout.week_2 -> loadWeekPage(pageView)
             R.layout.all_attendance -> loadAttendanceSummary(pageView)
         }
     }
@@ -287,7 +291,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<View?>(R.id.menuSchedule)?.setOnClickListener { moveTo(R.layout.schedule_1) }
         findViewById<View?>(R.id.menuWeekAttendance)?.setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.END)
-            startActivity(Intent(this, WeekActivity::class.java))
+            loadPage(R.layout.week_1)
         }
         findViewById<View?>(R.id.menuAllAttendance)?.setOnClickListener { moveTo(R.layout.all_attendance) }
         findViewById<View?>(R.id.menuConfirmPeriod)?.setOnClickListener { moveTo(R.layout.confirm_1) }
@@ -1346,56 +1350,580 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadAttendanceCalendar(pageView: View) {
-        FirebaseClient.get("Attendance_Records") { recordsRoot ->
-            val result = StringBuilder()
-            val subjectKeys = recordsRoot?.keys()
-            if (subjectKeys != null) {
-                while (subjectKeys.hasNext()) {
-                    val subjectCode = subjectKeys.next()
-                    val subjectObject = recordsRoot.optJSONObject(subjectCode) ?: continue
-                    val dateKeys = subjectObject.keys()
-                    while (dateKeys.hasNext()) {
-                        val date = dateKeys.next()
-                        val userRecord = subjectObject.optJSONObject(date)?.optJSONObject(userId) ?: continue
-                        result.append(date).append(" / ").append(subjectCode).append(" / ").append(userRecord.optString("finalStatus", "")).append("\n")
-                    }
+    private fun loadWeekPage(pageView: View) {
+        weekCalendar = Calendar.getInstance(Locale.KOREA)
+        weekSelectedDateStr = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(weekCalendar.time)
+        setupWeekCalendar(pageView)
+        loadAttendanceForDate(pageView, weekSelectedDateStr)
+    }
+
+    private fun setupWeekCalendar(pageView: View) {
+        renderWeekDates(pageView)
+
+        pageView.findViewById<View?>(R.id.btnPrevWeek)?.setOnClickListener {
+            weekCalendar.add(Calendar.WEEK_OF_YEAR, -1)
+            renderWeekDates(pageView)
+            loadAttendanceForDate(pageView, weekSelectedDateStr)
+        }
+
+        pageView.findViewById<View?>(R.id.btnNextWeek)?.setOnClickListener {
+            val today = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(Date())
+            val nextWeek = Calendar.getInstance(Locale.KOREA).apply {
+                time = weekCalendar.time
+                add(Calendar.WEEK_OF_YEAR, 1)
+                set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
+            }
+            if (SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(nextWeek.time) > today) {
+                return@setOnClickListener
+            }
+            weekCalendar.add(Calendar.WEEK_OF_YEAR, 1)
+            renderWeekDates(pageView)
+            loadAttendanceForDate(pageView, weekSelectedDateStr)
+        }
+    }
+
+    private fun renderWeekDates(pageView: View) {
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(Date())
+        val fmt = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA)
+        val dayFmt = SimpleDateFormat("d", Locale.KOREA)
+        val monthFmt = SimpleDateFormat("yyyy년 M월", Locale.KOREA)
+
+        val cal = Calendar.getInstance(Locale.KOREA).apply {
+            time = weekCalendar.time
+            set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
+        }
+        val mondayCal = cal.clone() as Calendar
+        mondayCal.add(Calendar.DAY_OF_WEEK, 1)
+        pageView.findViewById<TextView?>(R.id.tvMonth)?.text = monthFmt.format(mondayCal.time)
+
+        val dayIds = listOf(
+            R.id.dateSun to R.id.tvSunDate,
+            R.id.dateMon to R.id.tvMonDate,
+            R.id.dateTue to R.id.tvTueDate,
+            R.id.dateWed to R.id.tvWedDate,
+            R.id.dateThu to R.id.tvThuDate,
+            R.id.dateFri to R.id.tvFriDate,
+            R.id.dateSat to R.id.tvSatDate
+        )
+
+        for ((containerId, tvId) in dayIds) {
+            val dateStr = fmt.format(cal.time)
+            val isFuture = dateStr > today
+            val isToday = dateStr == today
+            val isSelected = dateStr == weekSelectedDateStr
+            val container = pageView.findViewById<LinearLayout?>(containerId)
+            val tv = pageView.findViewById<TextView?>(tvId)
+
+            tv?.text = dayFmt.format(cal.time)
+            when {
+                isSelected || isToday -> {
+                    tv?.background = resources.getDrawable(R.drawable.bg_date_selected_blue, null)
+                    tv?.setTextColor(Color.parseColor("#004B83"))
+                }
+                isFuture -> {
+                    tv?.background = null
+                    tv?.setTextColor(Color.parseColor("#BBBBBB"))
+                }
+                else -> {
+                    tv?.background = null
+                    tv?.setTextColor(Color.parseColor("#111111"))
                 }
             }
-            runOnUiThread {
-                setText(pageView, "tvAttendanceCalendar", result.toString())
-                addSimpleText(pageView, "layoutAttendanceCalendar", result.toString())
+
+            if (!isFuture) {
+                val clickDate = dateStr
+                container?.isClickable = true
+                container?.setOnClickListener {
+                    weekSelectedDateStr = clickDate
+                    renderWeekDates(pageView)
+                    loadAttendanceForDate(pageView, clickDate)
+                }
+            } else {
+                container?.setOnClickListener(null)
+                container?.isClickable = false
             }
+            cal.add(Calendar.DAY_OF_MONTH, 1)
+        }
+    }
+
+    private fun loadAttendanceForDate(pageView: View, dateStr: String) {
+        val fmt = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA)
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(Date())
+        val cal = Calendar.getInstance(Locale.KOREA).apply {
+            time = fmt.parse(dateStr) ?: Date()
+        }
+        val isToday = dateStr == today
+        val nowMinute = Calendar.getInstance(Locale.KOREA).let {
+            it.get(Calendar.HOUR_OF_DAY) * 60 + it.get(Calendar.MINUTE)
+        }
+
+        val dayOfWeekEng = when (cal.get(Calendar.DAY_OF_WEEK)) {
+            Calendar.SUNDAY -> "Sunday"
+            Calendar.MONDAY -> "Monday"
+            Calendar.TUESDAY -> "Tuesday"
+            Calendar.WEDNESDAY -> "Wednesday"
+            Calendar.THURSDAY -> "Thursday"
+            Calendar.FRIDAY -> "Friday"
+            Calendar.SATURDAY -> "Saturday"
+            else -> ""
+        }
+        val dayOfWeekKr = when (cal.get(Calendar.DAY_OF_WEEK)) {
+            Calendar.SUNDAY -> "일"
+            Calendar.MONDAY -> "월"
+            Calendar.TUESDAY -> "화"
+            Calendar.WEDNESDAY -> "수"
+            Calendar.THURSDAY -> "목"
+            Calendar.FRIDAY -> "금"
+            Calendar.SATURDAY -> "토"
+            else -> ""
+        }
+
+        pageView.findViewById<TextView?>(R.id.tvSelectedDate)?.text =
+            "${SimpleDateFormat("M월 d일", Locale.KOREA).format(cal.time)} ($dayOfWeekKr)"
+
+        firebaseDb.child("Enrollment").child(userId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(enrollSnap: DataSnapshot) {
+                    val enrolledCodes = enrollSnap.children
+                        .filter { it.getValue(Boolean::class.java) == true }
+                        .mapNotNull { it.key }
+
+                    if (enrolledCodes.isEmpty()) {
+                        showWeekMessage(pageView, "수강 중인 과목이 없습니다")
+                        return
+                    }
+
+                    val subjectCache = mutableMapOf<String, DataSnapshot>()
+                    var subjectDone = 0
+
+                    enrolledCodes.forEach { code ->
+                        firebaseDb.child("Subjects").child(code)
+                            .addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onDataChange(subjectSnap: DataSnapshot) {
+                                    subjectCache[code] = subjectSnap
+                                    subjectDone++
+                                    if (subjectDone < enrolledCodes.size) return
+
+                                    data class ClassEntry(
+                                        val code: String,
+                                        val name: String,
+                                        val timeRange: String,
+                                        val startTime: String,
+                                        val endMinute: Int
+                                    )
+
+                                    val classesOnDay = mutableListOf<ClassEntry>()
+                                    enrolledCodes.forEach { subjectCode ->
+                                        val snap = subjectCache[subjectCode] ?: return@forEach
+                                        val rawName = snap.child("subjectName").getValue(String::class.java).orEmpty()
+                                        val name = cleanSubjectNameForDisplay(rawName)
+                                        snap.child("schedule").children.forEach { daySnap ->
+                                            val dow = daySnap.child("dayOfWeek").getValue(String::class.java).orEmpty()
+                                            if (!dow.equals(dayOfWeekEng, ignoreCase = true)) return@forEach
+
+                                            var startTime = ""
+                                            var endTime = ""
+                                            daySnap.child("periods").children.forEach { periodSnap ->
+                                                val st = periodSnap.child("startTime").getValue(String::class.java).orEmpty()
+                                                val et = periodSnap.child("endTime").getValue(String::class.java).orEmpty()
+                                                if (st.isNotBlank() && startTime.isBlank()) startTime = st
+                                                if (et.isNotBlank()) endTime = et
+                                            }
+                                            if (startTime.isBlank() || endTime.isBlank()) return@forEach
+
+                                            val endMinute = scheduleTimeToMinutes(endTime)
+                                            if (isToday && nowMinute <= endMinute) return@forEach
+                                            classesOnDay.add(
+                                                ClassEntry(
+                                                    subjectCode,
+                                                    name.ifBlank { subjectCode },
+                                                    "$startTime - $endTime",
+                                                    startTime,
+                                                    endMinute
+                                                )
+                                            )
+                                        }
+                                    }
+
+                                    classesOnDay.sortBy { it.startTime }
+                                    if (classesOnDay.isEmpty()) {
+                                        showWeekMessage(pageView, "해당 날짜에 수업이 없습니다")
+                                        return
+                                    }
+
+                                    val statusCache = mutableMapOf<String, String>()
+                                    val uwbCache = mutableMapOf<String, List<Pair<String, Boolean>>>()
+                                    var recordDone = 0
+                                    val recordTotal = classesOnDay.size * 2
+
+                                    fun tryRenderAll() {
+                                        if (recordDone < recordTotal) return
+                                        val hasAbsent = statusCache.values.any { it == "결석" }
+                                        updateDateCellBorder(pageView, dateStr, hasAbsent)
+                                        renderWeekListWithUwb(
+                                            pageView,
+                                            classesOnDay.map {
+                                                Pair(
+                                                    Triple(it.name, it.timeRange, statusCache[it.code] ?: "결석"),
+                                                    uwbCache[it.code] ?: emptyList()
+                                                )
+                                            }
+                                        )
+                                    }
+
+                                    classesOnDay.forEach { entry ->
+                                        firebaseDb.child("Attendance_Records").child(entry.code).child(dateStr).child(userId)
+                                            .addListenerForSingleValueEvent(object : ValueEventListener {
+                                                override fun onDataChange(snap: DataSnapshot) {
+                                                    val raw = snap.child("finalStatus").getValue(String::class.java).orEmpty()
+                                                    statusCache[entry.code] = normalizeAttendanceStatus(raw).ifBlank { "결석" }
+                                                    recordDone++
+                                                    tryRenderAll()
+                                                }
+
+                                                override fun onCancelled(error: DatabaseError) {
+                                                    statusCache[entry.code] = "결석"
+                                                    recordDone++
+                                                    tryRenderAll()
+                                                }
+                                            })
+
+                                        firebaseDb.child("UWB_Logs").child(entry.code).child(dateStr).child(userId)
+                                            .addListenerForSingleValueEvent(object : ValueEventListener {
+                                                override fun onDataChange(snap: DataSnapshot) {
+                                                    uwbCache[entry.code] = snap.children.mapNotNull { logSnap ->
+                                                        val time = logSnap.child("timestamp").getValue(String::class.java).orEmpty()
+                                                        val detected = logSnap.child("isDetected").getValue(Boolean::class.java) ?: false
+                                                        if (time.isBlank()) null else Pair(time, detected)
+                                                    }.sortedBy { it.first }
+                                                    recordDone++
+                                                    tryRenderAll()
+                                                }
+
+                                                override fun onCancelled(error: DatabaseError) {
+                                                    uwbCache[entry.code] = emptyList()
+                                                    recordDone++
+                                                    tryRenderAll()
+                                                }
+                                            })
+                                    }
+                                }
+
+                                override fun onCancelled(error: DatabaseError) {
+                                    subjectDone++
+                                    if (subjectDone == enrolledCodes.size) {
+                                        showWeekMessage(pageView, "데이터를 불러오지 못했습니다")
+                                    }
+                                }
+                            })
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    showWeekMessage(pageView, "데이터를 불러오지 못했습니다")
+                }
+            })
+    }
+
+    private fun updateDateCellBorder(pageView: View, dateStr: String, hasAbsent: Boolean) {
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(Date())
+        val fmt = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA)
+        val cal = Calendar.getInstance(Locale.KOREA).apply {
+            time = weekCalendar.time
+            set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
+        }
+        val tvIds = listOf(
+            R.id.tvSunDate,
+            R.id.tvMonDate,
+            R.id.tvTueDate,
+            R.id.tvWedDate,
+            R.id.tvThuDate,
+            R.id.tvFriDate,
+            R.id.tvSatDate
+        )
+
+        for (tvId in tvIds) {
+            val currentDate = fmt.format(cal.time)
+            if (currentDate == dateStr) {
+                val tv = pageView.findViewById<TextView?>(tvId)
+                val isToday = currentDate == today
+                tv?.background = resources.getDrawable(
+                    if (hasAbsent) R.drawable.bg_date_warning_red else R.drawable.bg_date_selected_blue,
+                    null
+                )
+                tv?.setTextColor(if (hasAbsent && !isToday) Color.WHITE else Color.parseColor("#004B83"))
+                break
+            }
+            cal.add(Calendar.DAY_OF_MONTH, 1)
+        }
+    }
+
+    private fun renderWeekListWithUwb(
+        pageView: View,
+        items: List<Pair<Triple<String, String, String>, List<Pair<String, Boolean>>>>
+    ) {
+        val container = pageView.findViewById<LinearLayout?>(R.id.listContainer) ?: return
+        while (container.childCount > 1) container.removeViewAt(1)
+
+        items.forEach { (info, uwbLogs) ->
+            val (name, timeRange, status) = info
+            val color = when (status) {
+                "출석" -> Color.parseColor("#0281F6")
+                "지각" -> Color.parseColor("#9C27B0")
+                else -> Color.parseColor("#E53935")
+            }
+            val iconRes = when (status) {
+                "출석" -> R.drawable.attendanceweek
+                "지각" -> R.drawable.lateweek
+                else -> R.drawable.absentweek
+            }
+
+            val item = LayoutInflater.from(this@MainActivity)
+                .inflate(R.layout.item_attendance, container, false)
+
+            item.findViewById<View?>(R.id.viewSideBar)?.setBackgroundColor(color)
+            item.findViewById<TextView?>(R.id.tvSubjectName)?.text = name
+            item.findViewById<TextView?>(R.id.tvTimeRange)?.text = timeRange
+            item.findViewById<TextView?>(R.id.tvStatus)?.apply {
+                text = status
+                setTextColor(color)
+            }
+            item.findViewById<ImageView?>(R.id.ivStatusIcon)?.apply {
+                setImageResource(iconRes)
+                visibility = View.VISIBLE
+            }
+
+            val detailArea = item.findViewById<LinearLayout?>(R.id.detailArea)
+            val detailRows = item.findViewById<LinearLayout?>(R.id.detailRowsContainer)
+            val rowMain = item.findViewById<LinearLayout?>(R.id.rowMain)
+            val btnCollapse = item.findViewById<TextView?>(R.id.btnCollapse)
+
+            detailRows?.removeAllViews()
+            if (detailRows != null) {
+                val rows = if (uwbLogs.isEmpty()) listOf("UWB 실행이 되지 않았습니다" to "") else {
+                    uwbLogs.map { (time, detected) -> time to if (detected) "출석" else "미출석" }
+                }
+                rows.forEach { (time, detectedText) ->
+                    val row = LinearLayout(this@MainActivity).apply {
+                        orientation = LinearLayout.HORIZONTAL
+                        setPadding(0, 3, 0, 3)
+                    }
+                    row.addView(TextView(this@MainActivity).apply {
+                        text = time
+                        textSize = 12f
+                        setTextColor(Color.parseColor("#444444"))
+                        layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                    })
+                    row.addView(TextView(this@MainActivity).apply {
+                        text = detectedText
+                        textSize = 12f
+                        setTextColor(Color.parseColor("#888888"))
+                    })
+                    detailRows.addView(row)
+                }
+            }
+
+            rowMain?.setOnClickListener {
+                detailArea ?: return@setOnClickListener
+                detailArea.visibility = if (detailArea.visibility == View.GONE) View.VISIBLE else View.GONE
+            }
+            btnCollapse?.setOnClickListener { rowMain?.performClick() }
+            container.addView(item)
+        }
+    }
+
+    private fun showWeekMessage(pageView: View, msg: String) {
+        val container = pageView.findViewById<LinearLayout?>(R.id.listContainer) ?: return
+        while (container.childCount > 1) container.removeViewAt(1)
+        container.addView(TextView(this).apply {
+            text = msg
+            textSize = 14f
+            setTextColor(Color.parseColor("#888888"))
+            setPadding(8, 24, 8, 8)
+        })
+    }
+
+    private fun normalizeAttendanceStatus(status: String): String {
+        return when (status.trim().uppercase()) {
+            "출석", "출석 완료", "PRESENT", "ATTENDANCE", "ATTENDED" -> "출석"
+            "지각", "LATE" -> "지각"
+            "결석", "ABSENT", "ABSENCE" -> "결석"
+            else -> ""
         }
     }
 
     private fun loadAttendanceSummary(pageView: View) {
-        FirebaseClient.get("Attendance_Records") { recordsRoot ->
-            var present = 0; var late = 0; var absent = 0
-            val subjectKeys = recordsRoot?.keys()
-            if (subjectKeys != null) {
-                while (subjectKeys.hasNext()) {
-                    val subjectCode = subjectKeys.next()
-                    val subjectObject = recordsRoot.optJSONObject(subjectCode) ?: continue
-                    val dateKeys = subjectObject.keys()
-                    while (dateKeys.hasNext()) {
-                        val date = dateKeys.next()
-                        val userRecord = subjectObject.optJSONObject(date)?.optJSONObject(userId) ?: continue
-                        when (userRecord.optString("finalStatus", "")) {
-                            "출석", "출석 완료" -> present++
-                            "지각" -> late++
-                            "결석" -> absent++
+        clearAttendanceSummaryScreen(pageView)
+
+        FirebaseClient.get("Enrollment/$userId") { enrollmentJson ->
+            FirebaseClient.get("Subjects") { subjectsJson ->
+                FirebaseClient.get("Attendance_Records") { recordsRoot ->
+                    val enrolledSubjectCodes = getEnrolledSubjectCodes(enrollmentJson)
+                    val subjectItems = mutableListOf<SubjectAttendanceItem>()
+
+                    enrolledSubjectCodes.forEach { subjectCode ->
+                        val subjectJson = subjectsJson?.optJSONObject(subjectCode)
+                        val subjectName = cleanSubjectNameForDisplay(
+                            subjectJson?.optString("subjectName", "").orEmpty()
+                        )
+
+                        if (subjectName.isNotBlank()) {
+                            subjectItems.add(
+                                SubjectAttendanceItem(
+                                    subjectCode = subjectCode,
+                                    subjectName = subjectName,
+                                    stat = getAttendanceStatBySubject(recordsRoot, subjectCode, userId)
+                                )
+                            )
                         }
+                    }
+
+                    runOnUiThread {
+                        renderAttendanceSubjectGrid(pageView, subjectItems)
+                        renderAttendanceTotalSummary(pageView, subjectItems)
                     }
                 }
             }
-            val total = (present + late + absent).coerceAtLeast(1)
-            val text = "출석 ${present * 100 / total}% / 지각 ${late * 100 / total}% / 결석 ${absent * 100 / total}%"
-            runOnUiThread {
-                setText(pageView, "tvAttendanceSummary", text)
-                addSimpleText(pageView, "layoutAttendanceSummary", text)
+        }
+    }
+
+    private fun clearAttendanceSummaryScreen(pageView: View) {
+        pageView.findViewById<GridLayout?>(R.id.gridAttendanceRate)?.removeAllViews()
+        pageView.findViewById<TextView?>(R.id.tvSelectedClassName)?.text = ""
+        pageView.findViewById<TextView?>(R.id.tvLectureProgress)?.text = ""
+        pageView.findViewById<TextView?>(R.id.tvTotalAttendanceRate)?.text = ""
+        pageView.findViewById<TextView?>(R.id.tvTotalLateRate)?.text = ""
+        pageView.findViewById<TextView?>(R.id.tvTotalAbsentRate)?.text = ""
+    }
+
+    private fun getEnrolledSubjectCodes(enrollmentJson: JSONObject?): List<String> {
+        if (enrollmentJson == null) return emptyList()
+
+        val result = mutableListOf<String>()
+        val keys = enrollmentJson.keys()
+        while (keys.hasNext()) {
+            val code = keys.next()
+            if (enrollmentJson.optBoolean(code, false)) {
+                result.add(code)
             }
         }
+        return result.sorted()
+    }
+
+    private fun getAttendanceStatBySubject(
+        recordsRoot: JSONObject?,
+        subjectCode: String,
+        targetUserId: String
+    ): AttendanceStat {
+        val subjectRecordJson = recordsRoot?.optJSONObject(subjectCode) ?: return AttendanceStat()
+
+        var present = 0
+        var late = 0
+        var absent = 0
+        val dateKeys = subjectRecordJson.keys()
+        while (dateKeys.hasNext()) {
+            val userRecord = subjectRecordJson
+                .optJSONObject(dateKeys.next())
+                ?.optJSONObject(targetUserId)
+                ?: continue
+
+            when (normalizeAttendanceStatus(userRecord.optString("finalStatus", ""))) {
+                "출석" -> present++
+                "지각" -> late++
+                "결석" -> absent++
+            }
+        }
+
+        return AttendanceStat(present, late, absent)
+    }
+
+    private fun renderAttendanceSubjectGrid(
+        pageView: View,
+        subjectItems: List<SubjectAttendanceItem>
+    ) {
+        val grid = pageView.findViewById<GridLayout?>(R.id.gridAttendanceRate) ?: return
+        grid.removeAllViews()
+
+        subjectItems.forEach { item ->
+            val itemView = LayoutInflater.from(this)
+                .inflate(R.layout.all_attendance_rate, grid, false)
+
+            itemView.findViewById<TextView>(R.id.tvClassName).text = item.subjectName
+            val tvRate = itemView.findViewById<TextView>(R.id.tvAttendanceRate)
+            val donut = itemView.findViewById<DonutChartView>(R.id.donutChart)
+
+            if (item.stat.total > 0) {
+                tvRate.text = "${item.stat.presentRate}%"
+                tvRate.setTextColor(Color.parseColor("#004B83"))
+                donut.setData(item.stat.present, item.stat.late, item.stat.absent)
+            } else {
+                tvRate.text = ""
+                donut.clearData()
+            }
+
+            itemView.layoutParams = GridLayout.LayoutParams().apply {
+                width = 0
+                height = dpToPx(170)
+                columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                setMargins(0, 0, 0, 0)
+            }
+            grid.addView(itemView)
+        }
+    }
+
+    private fun renderAttendanceTotalSummary(
+        pageView: View,
+        subjectItems: List<SubjectAttendanceItem>
+    ) {
+        val totalPresent = subjectItems.sumOf { it.stat.present }
+        val totalLate = subjectItems.sumOf { it.stat.late }
+        val totalAbsent = subjectItems.sumOf { it.stat.absent }
+        val total = totalPresent + totalLate + totalAbsent
+
+        val firstSubject = subjectItems.firstOrNull { it.stat.total > 0 } ?: subjectItems.firstOrNull()
+        pageView.findViewById<TextView?>(R.id.tvSelectedClassName)?.text = firstSubject?.subjectName.orEmpty()
+        pageView.findViewById<TextView?>(R.id.tvLectureProgress)?.text = ""
+
+        val tvTotalRate = pageView.findViewById<TextView?>(R.id.tvTotalAttendanceRate)
+        val tvTotalLate = pageView.findViewById<TextView?>(R.id.tvTotalLateRate)
+        val tvTotalAbsent = pageView.findViewById<TextView?>(R.id.tvTotalAbsentRate)
+
+        if (total <= 0) {
+            tvTotalRate?.text = ""
+            tvTotalLate?.text = ""
+            tvTotalAbsent?.text = ""
+            return
+        }
+
+        tvTotalRate?.text = "${calculateRate(totalPresent, total)}%"
+        tvTotalRate?.setTextColor(Color.parseColor("#0281F6"))
+        tvTotalLate?.text = "${calculateRate(totalLate, total)}%"
+        tvTotalLate?.setTextColor(Color.parseColor("#9C27B0"))
+        tvTotalAbsent?.text = "${calculateRate(totalAbsent, total)}%"
+        tvTotalAbsent?.setTextColor(Color.parseColor("#E53935"))
+    }
+
+    private fun calculateRate(value: Int, total: Int): Int {
+        if (total <= 0) return 0
+        return ((value.toFloat() / total.toFloat()) * 100f).roundToInt()
+    }
+
+    private data class SubjectAttendanceItem(
+        val subjectCode: String,
+        val subjectName: String,
+        val stat: AttendanceStat
+    )
+
+    private data class AttendanceStat(
+        val present: Int = 0,
+        val late: Int = 0,
+        val absent: Int = 0
+    ) {
+        val total: Int
+            get() = present + late + absent
+
+        val presentRate: Int
+            get() = if (total <= 0) 0 else ((present.toFloat() / total) * 100f).roundToInt()
     }
 
     private fun drawScheduleGrid(
