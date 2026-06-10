@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="4dp"
+    android:layout_marginEnd="4dp"
+    android:layout_marginBottom="4dp"
+    app:cardBackgroundColor="#FFFFFF"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="18dp"
+        android:paddingBottom="18dp">
+
+        <!-- 과목명 -->
+        <TextView
+            android:id="@+id/tvCardSubjectName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#1A1A1A"
+            android:textSize="17sp"
+            android:fontFamily="@font/pretendard_bold" />
+
+        <!-- 교수명 -->
+        <TextView
+            android:id="@+id/tvCardProfessor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="#555555"
+            android:textSize="13sp"
+            android:fontFamily="@font/pretendard_medium" />
+
+        <!-- 구분선 -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="14dp"
+            android:background="#F0F0F0" />
+
+        <!-- 학기 -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="10dp">
+            <TextView android:layout_width="56dp" android:layout_height="wrap_content" android:text="학기" android:textColor="#999999" android:textSize="12sp" android:fontFamily="@font/pretendard_medium" />
+            <TextView android:id="@+id/tvCardSemester" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#333333" android:textSize="13sp" android:fontFamily="@font/pretendard_medium" />
+        </LinearLayout>
+
+        <!-- 시간 -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="10dp">
+            <TextView android:layout_width="56dp" android:layout_height="wrap_content" android:text="시간" android:textColor="#999999" android:textSize="12sp" android:fontFamily="@font/pretendard_medium" />
+            <TextView android:id="@+id/tvCardTime" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#333333" android:textSize="13sp" android:fontFamily="@font/pretendard_medium" />
+        </LinearLayout>
+
+        <!-- 장소 -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="10dp">
+            <TextView android:layout_width="56dp" android:layout_height="wrap_content" android:text="장소" android:textColor="#999999" android:textSize="12sp" android:fontFamily="@font/pretendard_medium" />
+            <TextView android:id="@+id/tvCardLocation" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#333333" android:textSize="13sp" android:fontFamily="@font/pretendard_medium" />
+        </LinearLayout>
+
+        <!-- 과목코드 -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+            <TextView android:layout_width="56dp" android:layout_height="wrap_content" android:text="과목코드" android:textColor="#999999" android:textSize="12sp" android:fontFamily="@font/pretendard_medium" />
+            <TextView android:id="@+id/tvCardCode" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#333333" android:textSize="13sp" android:fontFamily="@font/pretendard_medium" />
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layoutClassRateItem"
+    android:layout_width="0dp"
+    android:layout_height="170dp"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingStart="4dp"
+    android:paddingEnd="4dp">
+
+    <TextView
+        android:id="@+id/tvClassName"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/pretendard_bold"
+        android:gravity="center"
+        android:maxLines="2"
+        android:text=""
+        android:textColor="#004B83"
+        android:textSize="13sp"
+        android:textStyle="bold" />
+
+    <com.example.myapplication.DonutChartView
+        android:id="@+id/donutChart"
+        android:layout_width="88dp"
+        android:layout_height="88dp"
+        android:layout_marginTop="8dp" />
+
+    <TextView
+        android:id="@+id/tvRateLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="7dp"
+        android:fontFamily="@font/pretendard_medium"
+        android:text="출석률"
+        android:textColor="#777777"
+        android:textSize="10sp" />
+
+    <TextView
+        android:id="@+id/tvAttendanceRate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/pretendard_bold"
+        android:text=""
+        android:textColor="#004B83"
+        android:textSize="17sp"
+        android:textStyle="bold" />
+
+</LinearLayout>
